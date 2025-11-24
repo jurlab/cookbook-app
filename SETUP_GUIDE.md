@@ -26,9 +26,6 @@ Before you begin, make sure you have:
   - Create a new API key
   - Copy it somewhere safe (you'll need it soon!)
 
-API KEY
-
-  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
 
 
 
