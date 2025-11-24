@@ -91,7 +91,7 @@ cp .env.example .env
 Your `.env` file should look like:
 ```
 DATABASE_URL=sqlite:///./cookbook.db
-ANTHROPIC_API_KEY=sk-ant-api03-...your-key-here...
+
 ```
 
 ### Step 3: Frontend Setup
