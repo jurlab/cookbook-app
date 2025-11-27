@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import func
 from typing import List, Optional
 from app.database import get_db
 from app.models import Recipe, Ingredient, Cookbook
@@ -11,45 +13,63 @@ from app.schemas import (
     SearchQuery
 )
 from app.services.ingredient_service import IngredientService
-import io      # ← WAS MISSING
-import csv     # ← WAS MISSING
+import io
+import csv
 
 router = APIRouter(prefix="/recipes", tags=["recipes"])
 
-@router.get("/", response_model=List[RecipeWithCookbook])
+@router.get("/")
 def get_recipes(
     cookbook_id: Optional[int] = None,
-    limit: int = Query(10000, le=10000),  # ← Now 10,000 recipes!,
+    page: int = Query(1, ge=1),
+    limit: int = Query(50, ge=1, le=500),
     db: Session = Depends(get_db)
 ):
-    # OPTIMIZATION: joinedload fetches cookbook data in the same query
+    """
+    Get recipes with pagination
+    Returns paginated list of recipes with total count
+    """
+    # Build base query with eager loading
     query = db.query(Recipe).options(joinedload(Recipe.cookbook))
     
     if cookbook_id:
         query = query.filter(Recipe.cookbook_id == cookbook_id)
     
-    recipes = query.limit(limit).all()
+    # Get total count before pagination
+    total = query.count()
     
-    # No changes needed to loop because relationships are now pre-loaded
+    # Apply pagination
+    offset = (page - 1) * limit
+    recipes = query.offset(offset).limit(limit).all()
+    
+    # Convert to response format using Pydantic v2 API
     result = []
     for recipe in recipes:
+        recipe_dict = RecipeSchema.model_validate(recipe).model_dump()
         result.append({
-            **RecipeSchema.from_orm(recipe).dict(),
+            **recipe_dict,
             "cookbook_title": recipe.cookbook.title,
             "cookbook_author": recipe.cookbook.author
         })
     
-    return result
+    return {
+        "items": result,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "pages": (total + limit - 1) // limit  # Ceiling division
+    }
 
 @router.get("/{recipe_id}", response_model=RecipeWithCookbook)
 def get_recipe(recipe_id: int, db: Session = Depends(get_db)):
     """Get a specific recipe"""
-    recipe = db.query(Recipe).filter(Recipe.id == recipe_id).first()
+    recipe = db.query(Recipe).options(joinedload(Recipe.cookbook)).filter(Recipe.id == recipe_id).first()
     if not recipe:
         raise HTTPException(status_code=404, detail="Recipe not found")
     
+    recipe_dict = RecipeSchema.model_validate(recipe).model_dump()
     return {
-        **RecipeSchema.from_orm(recipe).dict(),
+        **recipe_dict,
         "cookbook_title": recipe.cookbook.title,
         "cookbook_author": recipe.cookbook.author
     }
@@ -189,12 +209,15 @@ def search_recipes(search: SearchQuery, db: Session = Depends(get_db)):
     if search.min_rating is not None:
         query = query.filter(Recipe.rating >= search.min_rating)
     
+    # Add eager loading for cookbook relationship
+    query = query.options(joinedload(Recipe.cookbook))
     recipes = query.all()
     
     result = []
     for recipe in recipes:
+        recipe_dict = RecipeSchema.model_validate(recipe).model_dump()
         result.append({
-            **RecipeSchema.from_orm(recipe).dict(),
+            **recipe_dict,
             "cookbook_title": recipe.cookbook.title,
             "cookbook_author": recipe.cookbook.author
         })

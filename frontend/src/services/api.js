@@ -18,8 +18,11 @@ export const cookbookAPI = {
 };
 
 export const recipeAPI = {
-  getAll: (cookbookId = null) => {
-    const params = cookbookId ? { cookbook_id: cookbookId } : {};
+  getAll: (cookbookId = null, page = 1, limit = 50) => {
+    const params = { page, limit };
+    if (cookbookId) {
+      params.cookbook_id = cookbookId;
+    }
     return api.get('/recipes/', { params });
   },
   getById: (id) => api.get(`/recipes/${id}`),

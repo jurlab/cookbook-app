@@ -11,20 +11,33 @@ function RecipeManager({ refreshTrigger }) {
   const [filterCookbook, setFilterCookbook] = useState('');
   const [sortBy, setSortBy] = useState('name'); // 'name', 'cookbook', 'date'
   const [currentPage, setCurrentPage] = useState(1);
+  const [totalRecipes, setTotalRecipes] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
   const recipesPerPage = 50;
 
   useEffect(() => {
     loadData();
-  }, [refreshTrigger]); // Reload when refreshTrigger changes!
+  }, [refreshTrigger, currentPage]); // Reload when refreshTrigger or page changes
 
   const loadData = async () => {
     setLoading(true);
     try {
+      const cookbookFilter = filterCookbook ? parseInt(filterCookbook) : null;
       const [recipesRes, cookbooksRes] = await Promise.all([
-        recipeAPI.getAll(),
+        recipeAPI.getAll(cookbookFilter, currentPage, recipesPerPage),
         cookbookAPI.getAll()
       ]);
-      setRecipes(recipesRes.data);
+      
+      // Handle new paginated response format
+      if (recipesRes.data.items) {
+        setRecipes(recipesRes.data.items);
+        setTotalRecipes(recipesRes.data.total);
+        setTotalPages(recipesRes.data.pages);
+      } else {
+        // Fallback for old format (shouldn't happen with new API)
+        setRecipes(recipesRes.data);
+        setTotalRecipes(recipesRes.data.length);
+      }
       setCookbooks(cookbooksRes.data);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -42,7 +55,12 @@ function RecipeManager({ refreshTrigger }) {
     try {
       await recipeAPI.delete(recipeId);
       // Reload from server to ensure sync
-      await loadData();
+      // If we deleted the last item on the page, go back a page
+      if (recipes.length === 1 && currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      } else {
+        await loadData();
+      }
     } catch (error) {
       console.error('Error deleting recipe:', error);
       alert('Error deleting recipe');
@@ -90,13 +108,14 @@ function RecipeManager({ refreshTrigger }) {
     }
   };
 
-  // Filter and sort recipes
+  // Client-side filtering and sorting (for search term only)
+  // Note: Cookbook filter is now server-side via loadData
   const filteredRecipes = recipes
     .filter(recipe => {
+      if (!searchTerm) return true;
       const matchesSearch = recipe.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         recipe.ingredients.some(ing => ing.name.toLowerCase().includes(searchTerm.toLowerCase()));
-      const matchesCookbook = !filterCookbook || recipe.cookbook_id === parseInt(filterCookbook);
-      return matchesSearch && matchesCookbook;
+      return matchesSearch;
     })
     .sort((a, b) => {
       switch (sortBy) {
@@ -111,17 +130,19 @@ function RecipeManager({ refreshTrigger }) {
       }
     });
 
-  // Pagination
-  const totalPages = Math.ceil(filteredRecipes.length / recipesPerPage);
-  const startIndex = (currentPage - 1) * recipesPerPage;
-  const paginatedRecipes = filteredRecipes.slice(startIndex, startIndex + recipesPerPage);
+  // Reset to page 1 when filter changes
+  useEffect(() => {
+    if (filterCookbook !== '') {
+      setCurrentPage(1);
+    }
+  }, [filterCookbook]);
 
   return (
     <div className="max-w-7xl mx-auto">
       <div className="bg-white rounded-lg shadow-md p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900">
-            📝 All Recipes ({filteredRecipes.length})
+            📝 All Recipes ({totalRecipes} total, showing {filteredRecipes.length} on this page)
           </h2>
           <div className="flex gap-3">
             <button
@@ -163,9 +184,24 @@ function RecipeManager({ refreshTrigger }) {
             </label>
             <select
               value={filterCookbook}
-              onChange={(e) => {
+              onChange={async (e) => {
                 setFilterCookbook(e.target.value);
                 setCurrentPage(1);
+                // Trigger reload with new filter
+                setLoading(true);
+                try {
+                  const cookbookFilter = e.target.value ? parseInt(e.target.value) : null;
+                  const recipesRes = await recipeAPI.getAll(cookbookFilter, 1, recipesPerPage);
+                  if (recipesRes.data.items) {
+                    setRecipes(recipesRes.data.items);
+                    setTotalRecipes(recipesRes.data.total);
+                    setTotalPages(recipesRes.data.pages);
+                  }
+                } catch (error) {
+                  console.error('Error loading recipes:', error);
+                } finally {
+                  setLoading(false);
+                }
               }}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
             >
@@ -197,7 +233,7 @@ function RecipeManager({ refreshTrigger }) {
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
             <p className="mt-4 text-gray-600">Loading recipes...</p>
           </div>
-        ) : paginatedRecipes.length === 0 ? (
+        ) : filteredRecipes.length === 0 ? (
           <div className="text-center py-12">
             <p className="text-gray-500 text-lg">No recipes found</p>
           </div>
@@ -232,7 +268,7 @@ function RecipeManager({ refreshTrigger }) {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {paginatedRecipes.map((recipe) => (
+                  {filteredRecipes.map((recipe) => (
                     <tr key={recipe.id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="text-sm font-medium text-gray-900">
@@ -295,17 +331,17 @@ function RecipeManager({ refreshTrigger }) {
               <div className="mt-6 flex justify-center items-center gap-2">
                 <button
                   onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
+                  disabled={currentPage === 1 || loading}
                   className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Previous
                 </button>
                 <span className="text-sm text-gray-600">
-                  Page {currentPage} of {totalPages}
+                  Page {currentPage} of {totalPages} ({totalRecipes} total recipes)
                 </span>
                 <button
                   onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
+                  disabled={currentPage === totalPages || loading}
                   className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   Next
