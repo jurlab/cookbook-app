@@ -47,3 +47,12 @@ def root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "https://cookbook-app-inky.vercel.app/"  # Add your Vercel URL
+    ],
+    # ...
+)
