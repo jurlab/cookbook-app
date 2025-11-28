@@ -45,7 +45,9 @@ function OCRUpload({ cookbooks, onComplete }) {
         });
         cookbookId = response.data.id;
       } catch (error) {
-        alert('Error creating cookbook');
+        console.error('Error creating cookbook:', error);
+        const errorMessage = error.response?.data?.detail || error.message || 'Unknown error';
+        alert(`Error creating cookbook: ${errorMessage}`);
         return;
       }
     } else if (!cookbookId) {
@@ -94,21 +96,24 @@ function OCRUpload({ cookbooks, onComplete }) {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-6">
-          📸 Add Cookbook Index Pages
-        </h2>
+      <div className="bg-[#fffdf7] border-2 border-[#1a1a1a] p-6">
+        {/* Section header */}
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-3 h-8 bg-[#2851A3]"></div>
+          <h2 className="text-lg font-bold text-[#1a1a1a] uppercase tracking-wide">Add Cookbook Index Pages</h2>
+        </div>
 
         {!showResults ? (
           <>
+            {/* Cookbook selector */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select cookbook
+              <label className="block text-xs font-bold text-[#1a1a1a] uppercase tracking-wide mb-2">
+                Select Cookbook
               </label>
               <select
                 value={selectedCookbook}
                 onChange={(e) => setSelectedCookbook(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-white border-2 border-[#1a1a1a] text-[#1a1a1a] focus:outline-none focus:border-[#2851A3] cursor-pointer"
               >
                 <option value="">-- Choose a cookbook --</option>
                 {cookbooks.map((cb) => (
@@ -120,87 +125,101 @@ function OCRUpload({ cookbooks, onComplete }) {
               </select>
             </div>
 
+            {/* New cookbook form */}
             {selectedCookbook === 'new' && (
-              <div className="mb-6 p-4 bg-orange-50 rounded-lg">
+              <div className="mb-6 p-4 bg-[#E6A817]/10 border-2 border-[#E6A817]/30">
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Cookbook title *
+                  <label className="block text-xs font-bold text-[#1a1a1a] uppercase tracking-wide mb-2">
+                    Cookbook Title *
                   </label>
                   <input
                     type="text"
                     value={newCookbookTitle}
                     onChange={(e) => setNewCookbookTitle(e.target.value)}
                     placeholder="e.g., Mediterranean Cookbook"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-white border-2 border-[#1a1a1a] text-[#1a1a1a] placeholder-[#1a1a1a]/40 focus:outline-none focus:border-[#2851A3]"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Author (optional)
+                  <label className="block text-xs font-bold text-[#1a1a1a] uppercase tracking-wide mb-2">
+                    Author (Optional)
                   </label>
                   <input
                     type="text"
                     value={newCookbookAuthor}
                     onChange={(e) => setNewCookbookAuthor(e.target.value)}
                     placeholder="e.g., Jamie Oliver"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full px-4 py-3 bg-white border-2 border-[#1a1a1a] text-[#1a1a1a] placeholder-[#1a1a1a]/40 focus:outline-none focus:border-[#2851A3]"
                   />
                 </div>
               </div>
             )}
 
+            {/* Upload area */}
             <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Upload index page photo
+              <label className="block text-xs font-bold text-[#1a1a1a] uppercase tracking-wide mb-2">
+                Upload Index Page Photo
               </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageSelect}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-              />
+              <label className="block border-2 border-dashed border-[#1a1a1a]/30 p-12 text-center hover:border-[#2851A3] transition-colors cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageSelect}
+                  className="hidden"
+                />
+                <div className="w-16 h-16 mx-auto mb-4 bg-[#2851A3]/10 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-[#2851A3]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="square" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                <p className="text-[#1a1a1a]/70 mb-2">Click to upload or drag and drop</p>
+                <p className="text-[#1a1a1a]/40 text-sm">PNG, JPG up to 10MB</p>
+              </label>
             </div>
 
+            {/* Image preview */}
             {imagePreview && (
               <div className="mb-6">
-                <p className="text-sm font-medium text-gray-700 mb-2">Preview:</p>
+                <p className="text-xs font-bold text-[#1a1a1a] uppercase tracking-wide mb-2">Preview:</p>
                 <img
                   src={imagePreview}
                   alt="Index page preview"
-                  className="max-w-full h-auto rounded-lg border border-gray-300"
+                  className="max-w-full h-auto border-2 border-[#1a1a1a]"
                 />
               </div>
             )}
 
+            {/* Extract button */}
             <button
               onClick={processOCR}
               disabled={isProcessing || !selectedImage}
-              className="w-full px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
+              className="w-full py-4 bg-[#2851A3] text-white font-bold uppercase tracking-wider text-lg hover:bg-[#1f4280] disabled:bg-[#1a1a1a]/20 disabled:text-[#1a1a1a]/40 disabled:cursor-not-allowed transition-colors border-2 border-[#1a1a1a]"
             >
               {isProcessing ? (
-                <span className="flex items-center justify-center">
-                  <span className="animate-spin mr-2">⏳</span>
+                <span className="flex items-center justify-center gap-3">
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                   Processing with AI...
                 </span>
               ) : (
-                '🤖 Extract Recipes with AI'
+                'Extract Recipes with AI'
               )}
             </button>
 
-            <p className="mt-4 text-sm text-gray-500 text-center">
-              This uses Claude Vision to extract recipe names, page numbers, and ingredients from your index photo.
+            <p className="mt-4 text-sm text-[#1a1a1a]/50 text-center">
+              Uses Claude Vision to extract recipe names, page numbers, and ingredients
             </p>
           </>
         ) : (
           <div>
-            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-              <h3 className="text-lg font-semibold text-green-800 mb-2">
-                ✅ Success!
+            {/* Success message */}
+            <div className="mb-6 p-4 bg-[#2d7d46]/10 border-2 border-[#2d7d46]/30">
+              <h3 className="text-lg font-bold text-[#2d7d46] mb-2 uppercase tracking-wide">
+                Success!
               </h3>
-              <p className="text-green-700">
+              <p className="text-[#2d7d46]">
                 {ocrResults.message}
               </p>
-              <div className="mt-2 text-sm text-green-600">
+              <div className="mt-2 text-sm text-[#2d7d46]/80">
                 <p>Recipes saved: {ocrResults.saved}</p>
                 <p>Duplicates skipped: {ocrResults.skipped}</p>
               </div>
@@ -211,19 +230,19 @@ function OCRUpload({ cookbooks, onComplete }) {
               <div className="mb-6">
                 <button
                   onClick={() => setShowRawResponse(!showRawResponse)}
-                  className="w-full flex justify-between items-center p-4 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition-colors"
+                  className="w-full flex justify-between items-center p-4 bg-[#2851A3]/10 border-2 border-[#2851A3]/30 hover:bg-[#2851A3]/20 transition-colors"
                 >
-                  <span className="font-semibold text-blue-900">
-                    🤖 Raw Claude Vision Response
+                  <span className="font-bold text-[#2851A3] uppercase tracking-wide text-sm">
+                    Raw Claude Vision Response
                   </span>
-                  <span className="text-blue-600">
-                    {showRawResponse ? '▼' : '▶'}
+                  <span className="text-[#2851A3] text-xl">
+                    {showRawResponse ? '−' : '+'}
                   </span>
                 </button>
                 
                 {showRawResponse && (
-                  <div className="mt-2 p-4 bg-gray-50 border border-gray-300 rounded-lg">
-                    <pre className="text-xs text-gray-800 whitespace-pre-wrap overflow-x-auto">
+                  <div className="mt-2 p-4 bg-[#1a1a1a]/5 border-2 border-[#1a1a1a]/10">
+                    <pre className="text-xs text-[#1a1a1a] whitespace-pre-wrap overflow-x-auto font-mono">
                       {ocrResults.raw_response}
                     </pre>
                   </div>
@@ -231,31 +250,45 @@ function OCRUpload({ cookbooks, onComplete }) {
               </div>
             )}
 
+            {/* Action buttons */}
             <div className="flex gap-3">
               <button
                 onClick={handleReset}
-                className="flex-1 px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors font-medium"
+                className="flex-1 py-4 bg-[#E6A817] text-[#1a1a1a] font-bold uppercase tracking-wide hover:bg-[#d49a15] transition-colors border-2 border-[#1a1a1a]"
               >
-                📸 Add Another Page
+                Add Another Page
               </button>
               <button
                 onClick={handleComplete}
-                className="flex-1 px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                className="flex-1 py-4 bg-[#2d7d46] text-white font-bold uppercase tracking-wide hover:bg-[#256b3a] transition-colors border-2 border-[#1a1a1a]"
               >
-                ✓ Done - Go to Search
+                Done — Go to Search
               </button>
             </div>
           </div>
         )}
       </div>
 
-      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-semibold text-blue-900 mb-2">💡 Tips:</h3>
-        <ul className="text-sm text-blue-800 space-y-1">
-          <li>• Take clear, well-lit photos of your cookbook index pages</li>
-          <li>• Process each index page separately</li>
-          <li>• The AI will automatically detect duplicate recipes across pages</li>
-          <li>• You can add multiple pages from the same cookbook</li>
+      {/* Tips box */}
+      <div className="mt-6 bg-[#2851A3]/10 border-2 border-[#2851A3]/30 p-5">
+        <h3 className="font-bold text-[#2851A3] mb-3 uppercase text-sm tracking-wide">Tips</h3>
+        <ul className="text-sm text-[#1a1a1a]/70 space-y-2">
+          <li className="flex items-start gap-2">
+            <span className="text-[#2851A3] mt-0.5">→</span>
+            Take clear, well-lit photos of your cookbook index pages
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-[#2851A3] mt-0.5">→</span>
+            Process each index page separately
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-[#2851A3] mt-0.5">→</span>
+            The AI will automatically detect duplicate recipes across pages
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-[#2851A3] mt-0.5">→</span>
+            You can add multiple pages from the same cookbook
+          </li>
         </ul>
       </div>
     </div>

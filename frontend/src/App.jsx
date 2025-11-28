@@ -13,9 +13,9 @@ function App() {
   const [recipes, setRecipes] = useState([]);
   const [cookbooks, setCookbooks] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [activeView, setActiveView] = useState('search'); // 'search', 'recipes', 'upload', 'cookbooks', 'ingredients'
+  const [activeView, setActiveView] = useState('search');
   const [searchPerformed, setSearchPerformed] = useState(false);
-  const [refreshTrigger, setRefreshTrigger] = useState(0); // Trigger data reload
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
     loadCookbooks();
@@ -69,12 +69,12 @@ function App() {
 
   const handleOCRComplete = () => {
     loadCookbooks();
-    setRefreshTrigger(prev => prev + 1); // Increment trigger to force refresh
+    setRefreshTrigger(prev => prev + 1);
     setActiveView('search');
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#f5f3ee]">
       <Header activeView={activeView} setActiveView={setActiveView} />
       
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -84,14 +84,14 @@ function App() {
             
             {loading && (
               <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
-                <p className="mt-4 text-gray-600">Searching recipes...</p>
+                <div className="inline-block w-12 h-12 border-4 border-[#1a1a1a]/20 border-t-[#D94E3C] rounded-full animate-spin"></div>
+                <p className="mt-4 text-[#1a1a1a]/60 font-medium uppercase tracking-wide">Searching recipes...</p>
               </div>
             )}
             
             {!loading && searchPerformed && recipes.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-gray-600 text-lg">No recipes found. Try different ingredients!</p>
+              <div className="text-center py-12 border-2 border-dashed border-[#1a1a1a]/20 bg-[#fffdf7]">
+                <p className="text-[#1a1a1a]/60 text-lg">No recipes found. Try different ingredients!</p>
               </div>
             )}
             
@@ -104,11 +104,17 @@ function App() {
             )}
             
             {!searchPerformed && !loading && (
-              <div className="text-center py-12">
-                <p className="text-gray-500 text-lg mb-4">
-                  👆 Search by ingredients to find recipes
+              <div className="text-center py-16 border-2 border-dashed border-[#1a1a1a]/20 bg-[#fffdf7]">
+                {/* Bauhaus-inspired decorative element */}
+                <div className="w-20 h-20 mx-auto mb-6 relative">
+                  <div className="absolute inset-0 bg-[#E6A817] rounded-full opacity-20"></div>
+                  <div className="absolute inset-4 bg-[#E6A817] rounded-full opacity-40"></div>
+                  <div className="absolute inset-8 bg-[#E6A817] rounded-full"></div>
+                </div>
+                <p className="text-[#1a1a1a]/70 text-lg mb-2 font-medium">
+                  Search by ingredients to find recipes
                 </p>
-                <p className="text-gray-400">
+                <p className="text-[#1a1a1a]/40">
                   Or add your first cookbook using the "Add Cookbook" button above
                 </p>
               </div>
@@ -138,6 +144,15 @@ function App() {
           <IngredientMerge />
         )}
       </main>
+
+      {/* Bauhaus footer decoration */}
+      <footer className="mt-auto py-6">
+        <div className="max-w-7xl mx-auto px-4 flex justify-center gap-2">
+          <div className="w-8 h-2 bg-[#D94E3C]"></div>
+          <div className="w-8 h-2 bg-[#E6A817]"></div>
+          <div className="w-8 h-2 bg-[#2851A3]"></div>
+        </div>
+      </footer>
     </div>
   );
 }

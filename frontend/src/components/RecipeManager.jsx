@@ -9,7 +9,7 @@ function RecipeManager({ refreshTrigger }) {
   const [editingRecipe, setEditingRecipe] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCookbook, setFilterCookbook] = useState('');
-  const [sortBy, setSortBy] = useState('name'); // 'name', 'cookbook', 'date'
+  const [sortBy, setSortBy] = useState('name');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalRecipes, setTotalRecipes] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
@@ -17,7 +17,7 @@ function RecipeManager({ refreshTrigger }) {
 
   useEffect(() => {
     loadData();
-  }, [refreshTrigger, currentPage]); // Reload when refreshTrigger or page changes
+  }, [refreshTrigger, currentPage]);
 
   const loadData = async () => {
     setLoading(true);
@@ -28,13 +28,11 @@ function RecipeManager({ refreshTrigger }) {
         cookbookAPI.getAll()
       ]);
       
-      // Handle new paginated response format
       if (recipesRes.data.items) {
         setRecipes(recipesRes.data.items);
         setTotalRecipes(recipesRes.data.total);
         setTotalPages(recipesRes.data.pages);
       } else {
-        // Fallback for old format (shouldn't happen with new API)
         setRecipes(recipesRes.data);
         setTotalRecipes(recipesRes.data.length);
       }
@@ -54,8 +52,6 @@ function RecipeManager({ refreshTrigger }) {
 
     try {
       await recipeAPI.delete(recipeId);
-      // Reload from server to ensure sync
-      // If we deleted the last item on the page, go back a page
       if (recipes.length === 1 && currentPage > 1) {
         setCurrentPage(currentPage - 1);
       } else {
@@ -79,7 +75,6 @@ function RecipeManager({ refreshTrigger }) {
         ingredient_names: updatedRecipe.ingredients.map(i => i.name)
       });
       
-      // Reload data to get fresh info
       await loadData();
       setEditingRecipe(null);
     } catch (error) {
@@ -92,7 +87,6 @@ function RecipeManager({ refreshTrigger }) {
     try {
       const response = await recipeAPI.exportCSV();
       
-      // Create blob and download
       const blob = new Blob([response.data], { type: 'text/csv' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -108,8 +102,6 @@ function RecipeManager({ refreshTrigger }) {
     }
   };
 
-  // Client-side filtering and sorting (for search term only)
-  // Note: Cookbook filter is now server-side via loadData
   const filteredRecipes = recipes
     .filter(recipe => {
       if (!searchTerm) return true;
@@ -130,40 +122,46 @@ function RecipeManager({ refreshTrigger }) {
       }
     });
 
-  // Reset to page 1 when filter changes
   useEffect(() => {
     if (filterCookbook !== '') {
       setCurrentPage(1);
     }
   }, [filterCookbook]);
 
+  // Accent colors for ingredients
+  const accentColors = ['#D94E3C', '#2851A3', '#E6A817'];
+
   return (
     <div className="max-w-7xl mx-auto">
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">
-            📝 All Recipes ({totalRecipes} total, showing {filteredRecipes.length} on this page)
-          </h2>
+      <div className="bg-[#fffdf7] border-2 border-[#1a1a1a] p-6">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-8 bg-[#2851A3]"></div>
+            <h2 className="text-lg font-bold text-[#1a1a1a] uppercase tracking-wide">
+              All Recipes ({totalRecipes} total)
+            </h2>
+          </div>
           <div className="flex gap-3">
             <button
               onClick={loadData}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-[#2851A3] text-white font-bold uppercase text-sm hover:bg-[#1f4280] transition-colors border-2 border-[#1a1a1a]"
             >
-              🔄 Refresh
+              Refresh
             </button>
             <button
               onClick={handleExportCSV}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+              className="px-4 py-2 bg-[#2d7d46] text-white font-bold uppercase text-sm hover:bg-[#256b3a] transition-colors border-2 border-[#1a1a1a]"
             >
-              📊 Export to CSV
+              Export CSV
             </button>
           </div>
         </div>
 
-        {/* Filters and Search */}
+        {/* Filters */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-bold text-[#1a1a1a] uppercase tracking-wide mb-2">
               Search
             </label>
             <input
@@ -174,12 +172,12 @@ function RecipeManager({ refreshTrigger }) {
                 setCurrentPage(1);
               }}
               placeholder="Search by name or ingredient..."
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-white border-2 border-[#1a1a1a] text-[#1a1a1a] placeholder-[#1a1a1a]/40 focus:outline-none focus:border-[#2851A3]"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-bold text-[#1a1a1a] uppercase tracking-wide mb-2">
               Filter by Cookbook
             </label>
             <select
@@ -187,7 +185,6 @@ function RecipeManager({ refreshTrigger }) {
               onChange={async (e) => {
                 setFilterCookbook(e.target.value);
                 setCurrentPage(1);
-                // Trigger reload with new filter
                 setLoading(true);
                 try {
                   const cookbookFilter = e.target.value ? parseInt(e.target.value) : null;
@@ -203,7 +200,7 @@ function RecipeManager({ refreshTrigger }) {
                   setLoading(false);
                 }
               }}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-white border-2 border-[#1a1a1a] text-[#1a1a1a] focus:outline-none focus:border-[#2851A3] cursor-pointer"
             >
               <option value="">All Cookbooks</option>
               {cookbooks.map(cb => (
@@ -213,13 +210,13 @@ function RecipeManager({ refreshTrigger }) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-xs font-bold text-[#1a1a1a] uppercase tracking-wide mb-2">
               Sort by
             </label>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-white border-2 border-[#1a1a1a] text-[#1a1a1a] focus:outline-none focus:border-[#2851A3] cursor-pointer"
             >
               <option value="name">Recipe Name</option>
               <option value="cookbook">Cookbook</option>
@@ -228,96 +225,104 @@ function RecipeManager({ refreshTrigger }) {
           </div>
         </div>
 
+        {/* Loading / Empty / Table */}
         {loading ? (
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
-            <p className="mt-4 text-gray-600">Loading recipes...</p>
+            <div className="inline-block w-12 h-12 border-4 border-[#1a1a1a]/20 border-t-[#2851A3] rounded-full animate-spin"></div>
+            <p className="mt-4 text-[#1a1a1a]/60 font-medium uppercase tracking-wide">Loading recipes...</p>
           </div>
         ) : filteredRecipes.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">No recipes found</p>
+          <div className="text-center py-12 border-2 border-dashed border-[#1a1a1a]/20">
+            <p className="text-[#1a1a1a]/50 text-lg">No recipes found</p>
           </div>
         ) : (
           <>
             {/* Table */}
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+            <div className="overflow-x-auto border-2 border-[#1a1a1a]">
+              <table className="min-w-full">
+                <thead className="bg-[#1a1a1a] text-[#fffdf7]">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">
                       Recipe Name
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">
                       Cookbook
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">
                       Page
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">
                       Rating
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">
                       Cooked
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-left text-xs font-bold uppercase tracking-wider">
                       Ingredients
                     </th>
-                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-4 text-right text-xs font-bold uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredRecipes.map((recipe) => (
-                    <tr key={recipe.id} className="hover:bg-gray-50">
+                <tbody className="divide-y-2 divide-[#1a1a1a]/10">
+                  {filteredRecipes.map((recipe, index) => (
+                    <tr key={recipe.id} className="hover:bg-[#1a1a1a]/5 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-bold text-[#1a1a1a]">
                           {recipe.name}
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-[#1a1a1a]/70">
                           {recipe.cookbook_title}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#1a1a1a]/70">
                         {recipe.page_number}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
-                          {'⭐'.repeat(Math.floor(recipe.rating))}
-                          {recipe.rating === 0 && '☆☆☆☆☆'}
+                        <div className="text-sm text-[#E6A817]">
+                          {'★'.repeat(Math.floor(recipe.rating))}
+                          <span className="text-[#1a1a1a]/20">{'★'.repeat(5 - Math.floor(recipe.rating))}</span>
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-[#1a1a1a]/70 font-medium">
                         {recipe.times_cooked}×
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1 max-w-xs">
-                          {recipe.ingredients.slice(0, 3).map(ing => (
-                            <span key={ing.id} className="inline-block px-2 py-1 text-xs bg-orange-50 text-orange-700 rounded">
+                          {recipe.ingredients.slice(0, 3).map((ing, i) => (
+                            <span 
+                              key={ing.id} 
+                              className="inline-block px-2 py-1 text-xs font-medium uppercase"
+                              style={{ 
+                                backgroundColor: `${accentColors[i % 3]}20`, 
+                                color: accentColors[i % 3] 
+                              }}
+                            >
                               {ing.name}
                             </span>
                           ))}
                           {recipe.ingredients.length > 3 && (
-                            <span className="text-xs text-gray-500">
-                              +{recipe.ingredients.length - 3} more
+                            <span className="text-xs text-[#1a1a1a]/50 font-medium">
+                              +{recipe.ingredients.length - 3}
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
                         <button
                           onClick={() => handleEdit(recipe)}
-                          className="text-orange-600 hover:text-orange-900 mr-3"
+                          className="text-[#2851A3] hover:text-[#1f4280] font-bold uppercase mr-4"
                         >
-                          ✏️ Edit
+                          Edit
                         </button>
                         <button
                           onClick={() => handleDelete(recipe.id, recipe.name)}
-                          className="text-red-600 hover:text-red-900"
+                          className="text-[#D94E3C] hover:text-[#c4453a] font-bold uppercase"
                         >
-                          🗑️ Delete
+                          Delete
                         </button>
                       </td>
                     </tr>
@@ -328,21 +333,21 @@ function RecipeManager({ refreshTrigger }) {
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="mt-6 flex justify-center items-center gap-2">
+              <div className="mt-6 flex justify-center items-center gap-4">
                 <button
                   onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1 || loading}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 border-2 border-[#1a1a1a] bg-white hover:bg-[#1a1a1a]/5 disabled:opacity-50 disabled:cursor-not-allowed font-bold uppercase text-sm transition-colors"
                 >
                   Previous
                 </button>
-                <span className="text-sm text-gray-600">
-                  Page {currentPage} of {totalPages} ({totalRecipes} total recipes)
+                <span className="text-sm text-[#1a1a1a]/70 font-medium">
+                  Page {currentPage} of {totalPages}
                 </span>
                 <button
                   onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages || loading}
-                  className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 border-2 border-[#1a1a1a] bg-white hover:bg-[#1a1a1a]/5 disabled:opacity-50 disabled:cursor-not-allowed font-bold uppercase text-sm transition-colors"
                 >
                   Next
                 </button>

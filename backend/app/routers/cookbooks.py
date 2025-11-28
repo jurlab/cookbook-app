@@ -1,10 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+from sqlalchemy.exc import SQLAlchemyError
 from typing import List
+import logging
 from app.database import get_db
 from app.models import Cookbook, Recipe
 from app.schemas import Cookbook as CookbookSchema, CookbookCreate
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/cookbooks", tags=["cookbooks"])
 
@@ -60,22 +64,37 @@ def get_cookbook(cookbook_id: int, db: Session = Depends(get_db)):
 @router.post("/", response_model=CookbookSchema)
 def create_cookbook(cookbook: CookbookCreate, db: Session = Depends(get_db)):
     """Create a new cookbook"""
-    db_cookbook = Cookbook(
-        title=cookbook.title,
-        author=cookbook.author
-    )
-    db.add(db_cookbook)
-    db.commit()
-    db.refresh(db_cookbook)
-    
-    return {
-        "id": db_cookbook.id,
-        "title": db_cookbook.title,
-        "author": db_cookbook.author,
-        "cover_image_url": db_cookbook.cover_image_url,
-        "date_added": db_cookbook.date_added,
-        "recipe_count": 0
-    }
+    try:
+        db_cookbook = Cookbook(
+            title=cookbook.title,
+            author=cookbook.author
+        )
+        db.add(db_cookbook)
+        db.commit()
+        db.refresh(db_cookbook)
+        
+        return {
+            "id": db_cookbook.id,
+            "title": db_cookbook.title,
+            "author": db_cookbook.author,
+            "cover_image_url": db_cookbook.cover_image_url,
+            "date_added": db_cookbook.date_added,
+            "recipe_count": 0
+        }
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.error(f"Database error creating cookbook: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to create cookbook: {str(e)}"
+        )
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Unexpected error creating cookbook: {str(e)}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="An unexpected error occurred while creating the cookbook"
+        )
 
 @router.delete("/{cookbook_id}")
 def delete_cookbook(cookbook_id: int, db: Session = Depends(get_db)):

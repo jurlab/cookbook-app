@@ -24,101 +24,118 @@ function RecipeCard({ recipe, onUpdate, onIncrementCooked }) {
       <button
         key={star}
         onClick={() => handleRatingChange(star)}
-        className="text-2xl focus:outline-none hover:scale-110 transition-transform"
+        className={`text-2xl transition-transform hover:scale-110 ${
+          star <= rating ? 'text-[#E6A817]' : 'text-[#1a1a1a]/20'
+        }`}
       >
-        {star <= rating ? '⭐' : '☆'}
+        ★
       </button>
     ));
   };
 
+  // Rotating accent colors for visual variety
+  const accentColors = ['#D94E3C', '#2851A3', '#E6A817'];
+  const accentColor = accentColors[recipe.id % 3];
+
   return (
-    <div className="bg-white rounded-lg shadow-md p-5 hover:shadow-lg transition-shadow">
-      <div className="mb-3">
-        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+    <div className="bg-[#fffdf7] border-2 border-[#1a1a1a] hover:shadow-[4px_4px_0px_0px_#1a1a1a] transition-shadow duration-200">
+      {/* Color accent bar */}
+      <div className="h-2" style={{ backgroundColor: accentColor }}></div>
+      
+      <div className="p-5">
+        {/* Recipe name */}
+        <h3 className="text-xl font-bold text-[#1a1a1a] mb-3 leading-tight">
           {recipe.name}
         </h3>
-        <div className="flex items-center text-sm text-gray-600 mb-1">
-          <span className="mr-2">📖</span>
+        
+        {/* Cookbook info */}
+        <div className="flex items-center gap-2 text-sm text-[#1a1a1a]/70 mb-1">
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="square" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+          </svg>
           <span className="font-medium">{recipe.cookbook_title}</span>
         </div>
-        <div className="text-sm text-gray-500">
+        <div className="text-sm text-[#1a1a1a]/50 mb-4">
           Page {recipe.page_number}
         </div>
-      </div>
 
-      <div className="flex items-center mb-3">
-        {renderStars()}
-      </div>
+        {/* Rating */}
+        <div className="flex items-center mb-4">
+          {renderStars()}
+        </div>
 
-      <div className="flex items-center justify-between mb-3 text-sm">
+        {/* Cook count button */}
         <button
           onClick={handleIncrementCooked}
-          className="flex items-center px-3 py-1 bg-green-100 text-green-800 rounded-full hover:bg-green-200 transition-colors"
+          className="inline-flex items-center gap-2 px-4 py-2 bg-[#1a1a1a]/5 hover:bg-[#1a1a1a]/10 border border-[#1a1a1a]/20 transition-colors mb-4"
         >
-          <span className="mr-1">👨‍🍳</span>
-          Cooked: {recipe.times_cooked}
+          <span className="text-lg">👨‍🍳</span>
+          <span className="font-medium text-[#1a1a1a]">Cooked: {recipe.times_cooked}</span>
         </button>
-      </div>
 
-      <div className="border-t pt-3">
-        <div className="flex flex-wrap gap-1 mb-2">
-          {recipe.ingredients.map((ingredient) => (
-            <span
-              key={ingredient.id}
-              className="inline-block px-2 py-1 text-xs bg-orange-50 text-orange-700 rounded"
-            >
-              {ingredient.name}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {isEditing ? (
-        <div className="mt-3">
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            placeholder="Add notes about this recipe..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent text-sm"
-            rows="3"
-          />
-          <div className="flex gap-2 mt-2">
-            <button
-              onClick={handleSaveNotes}
-              className="px-4 py-1 bg-orange-600 text-white rounded text-sm hover:bg-orange-700"
-            >
-              Save
-            </button>
-            <button
-              onClick={() => {
-                setNotes(recipe.notes || '');
-                setIsEditing(false);
-              }}
-              className="px-4 py-1 bg-gray-200 text-gray-700 rounded text-sm hover:bg-gray-300"
-            >
-              Cancel
-            </button>
+        {/* Ingredients */}
+        <div className="border-t-2 border-[#1a1a1a]/10 pt-4">
+          <div className="flex flex-wrap gap-2">
+            {recipe.ingredients.map((ingredient) => (
+              <span
+                key={ingredient.id}
+                className="inline-block px-3 py-1 text-xs font-medium uppercase tracking-wide"
+                style={{ backgroundColor: `${accentColor}20`, color: accentColor }}
+              >
+                {ingredient.name}
+              </span>
+            ))}
           </div>
         </div>
-      ) : (
-        <div className="mt-3">
-          {recipe.notes ? (
-            <div
-              onClick={() => setIsEditing(true)}
-              className="text-sm text-gray-600 cursor-pointer hover:bg-gray-50 p-2 rounded"
-            >
-              📝 {recipe.notes}
+
+        {/* Notes section */}
+        {isEditing ? (
+          <div className="mt-4 pt-4 border-t border-[#1a1a1a]/10">
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Add notes about this recipe..."
+              className="w-full px-3 py-2 border-2 border-[#1a1a1a] bg-white text-sm focus:outline-none focus:border-[#2851A3]"
+              rows="3"
+            />
+            <div className="flex gap-2 mt-2">
+              <button
+                onClick={handleSaveNotes}
+                className="px-4 py-2 bg-[#2851A3] text-white text-sm font-bold uppercase"
+              >
+                Save
+              </button>
+              <button
+                onClick={() => {
+                  setNotes(recipe.notes || '');
+                  setIsEditing(false);
+                }}
+                className="px-4 py-2 bg-[#1a1a1a]/10 text-[#1a1a1a] text-sm font-bold uppercase"
+              >
+                Cancel
+              </button>
             </div>
-          ) : (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="text-sm text-gray-400 hover:text-gray-600"
-            >
-              + Add notes
-            </button>
-          )}
-        </div>
-      )}
+          </div>
+        ) : (
+          <div className="mt-4 pt-4 border-t border-[#1a1a1a]/10">
+            {recipe.notes ? (
+              <div
+                onClick={() => setIsEditing(true)}
+                className="text-sm text-[#1a1a1a]/70 cursor-pointer hover:bg-[#1a1a1a]/5 p-2 -m-2"
+              >
+                <span className="font-medium text-[#1a1a1a]">Notes:</span> {recipe.notes}
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsEditing(true)}
+                className="text-sm text-[#1a1a1a]/40 hover:text-[#2851A3] transition-colors"
+              >
+                + Add notes
+              </button>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

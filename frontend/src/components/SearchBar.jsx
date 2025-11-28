@@ -51,59 +51,61 @@ function SearchBar({ onSearch, cookbooks }) {
   };
 
   return (
-    <div className="bg-white rounded-lg shadow p-6 mb-6">
-      <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Search by ingredients
-        </label>
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={ingredientInput}
-            onChange={(e) => setIngredientInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Type an ingredient and press Enter"
-            className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-          />
-          <button
-            onClick={handleAddIngredient}
-            className="px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
-          >
-            Add
-          </button>
-        </div>
+    <div className="bg-[#fffdf7] border-2 border-[#1a1a1a] p-6 mb-8">
+      {/* Section header with Bauhaus color block */}
+      <div className="flex items-center gap-3 mb-6">
+        <div className="w-3 h-8 bg-[#2851A3]"></div>
+        <h2 className="text-lg font-bold text-[#1a1a1a] uppercase tracking-wide">Search by Ingredients</h2>
       </div>
 
+      {/* Input row */}
+      <div className="flex gap-3 mb-4">
+        <input
+          type="text"
+          value={ingredientInput}
+          onChange={(e) => setIngredientInput(e.target.value)}
+          onKeyPress={handleKeyPress}
+          placeholder="Type an ingredient and press Enter"
+          className="flex-1 px-4 py-3 bg-white border-2 border-[#1a1a1a] text-[#1a1a1a] placeholder-[#1a1a1a]/40 focus:outline-none focus:border-[#2851A3] transition-colors"
+        />
+        <button
+          onClick={handleAddIngredient}
+          className="px-6 py-3 bg-[#E6A817] text-[#1a1a1a] font-bold uppercase tracking-wide hover:bg-[#d49a15] transition-colors border-2 border-[#1a1a1a]"
+        >
+          Add
+        </button>
+      </div>
+
+      {/* Ingredient tags */}
       {ingredients.length > 0 && (
-        <div className="mb-4">
-          <div className="flex flex-wrap gap-2">
-            {ingredients.map((ingredient) => (
-              <span
-                key={ingredient}
-                className="inline-flex items-center px-3 py-1 rounded-full text-sm bg-orange-100 text-orange-800"
+        <div className="flex flex-wrap gap-2 mb-6">
+          {ingredients.map((ingredient) => (
+            <span
+              key={ingredient}
+              className="inline-flex items-center px-4 py-2 bg-[#2851A3] text-white font-medium"
+            >
+              {ingredient}
+              <button
+                onClick={() => handleRemoveIngredient(ingredient)}
+                className="ml-3 text-white/70 hover:text-white text-lg leading-none"
               >
-                🏷️ {ingredient}
-                <button
-                  onClick={() => handleRemoveIngredient(ingredient)}
-                  className="ml-2 text-orange-600 hover:text-orange-800"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
+                ×
+              </button>
+            </span>
+          ))}
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+      {/* Filter row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Match type
+          <label className="block text-xs font-bold text-[#1a1a1a] uppercase tracking-wide mb-2">
+            Match Type
           </label>
           <select
             value={operator}
             onChange={(e) => setOperator(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            className="w-full px-4 py-3 bg-white border-2 border-[#1a1a1a] text-[#1a1a1a] focus:outline-none focus:border-[#2851A3] cursor-pointer"
           >
             <option value="AND">All ingredients (AND)</option>
             <option value="OR">Any ingredient (OR)</option>
@@ -111,8 +113,8 @@ function SearchBar({ onSearch, cookbooks }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Minimum rating
+          <label className="block text-xs font-bold text-[#1a1a1a] uppercase tracking-wide mb-2">
+            Minimum Rating
           </label>
           <input
             type="number"
@@ -122,27 +124,27 @@ function SearchBar({ onSearch, cookbooks }) {
             value={minRating}
             onChange={(e) => setMinRating(e.target.value)}
             placeholder="Any"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+            className="w-full px-4 py-3 bg-white border-2 border-[#1a1a1a] text-[#1a1a1a] placeholder-[#1a1a1a]/40 focus:outline-none focus:border-[#2851A3]"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Filter by cookbook
+          <label className="block text-xs font-bold text-[#1a1a1a] uppercase tracking-wide mb-2">
+            Filter by Cookbook
           </label>
-          <div className="max-h-24 overflow-y-auto border border-gray-300 rounded-lg p-2">
+          <div className="max-h-24 overflow-y-auto border-2 border-[#1a1a1a] bg-white p-2">
             {cookbooks.length === 0 ? (
-              <p className="text-sm text-gray-500">No cookbooks added yet</p>
+              <p className="text-sm text-[#1a1a1a]/50 px-2">No cookbooks added yet</p>
             ) : (
               cookbooks.map((cookbook) => (
-                <label key={cookbook.id} className="flex items-center mb-1 cursor-pointer">
+                <label key={cookbook.id} className="flex items-center py-1 cursor-pointer hover:bg-[#1a1a1a]/5 px-2">
                   <input
                     type="checkbox"
                     checked={selectedCookbooks.includes(cookbook.id)}
                     onChange={() => toggleCookbook(cookbook.id)}
-                    className="mr-2"
+                    className="mr-3"
                   />
-                  <span className="text-sm">{cookbook.title}</span>
+                  <span className="text-sm text-[#1a1a1a]">{cookbook.title}</span>
                 </label>
               ))
             )}
@@ -150,12 +152,13 @@ function SearchBar({ onSearch, cookbooks }) {
         </div>
       </div>
 
+      {/* Search button */}
       <button
         onClick={handleSearch}
         disabled={ingredients.length === 0}
-        className="w-full px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
+        className="w-full py-4 bg-[#D94E3C] text-white font-bold uppercase tracking-wider text-lg hover:bg-[#c4453a] disabled:bg-[#1a1a1a]/20 disabled:text-[#1a1a1a]/40 disabled:cursor-not-allowed transition-colors border-2 border-[#1a1a1a]"
       >
-        🔍 Search Recipes
+        Search Recipes
       </button>
     </div>
   );

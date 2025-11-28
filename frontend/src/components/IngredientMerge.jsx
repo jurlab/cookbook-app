@@ -29,7 +29,6 @@ function IngredientMerge() {
 
     try {
       await ingredientAPI.merge(sourceId, targetId);
-      // Remove the merged suggestion from the list
       setSuggestions(suggestions.filter(s => s.ingredient_id !== sourceId));
       alert('Ingredients merged successfully!');
     } catch (error) {
@@ -40,17 +39,20 @@ function IngredientMerge() {
 
   return (
     <div className="max-w-4xl mx-auto">
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2">
-          🥕 Ingredient Management
-        </h2>
-        <p className="text-gray-600 mb-6">
+      <div className="bg-[#fffdf7] border-2 border-[#1a1a1a] p-6">
+        {/* Section header */}
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-3 h-8 bg-[#D94E3C]"></div>
+          <h2 className="text-lg font-bold text-[#1a1a1a] uppercase tracking-wide">Ingredient Management</h2>
+        </div>
+        <p className="text-[#1a1a1a]/60 mb-6 ml-6">
           Review and merge similar ingredients to keep your database organized
         </p>
 
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Similarity threshold: {(threshold * 100).toFixed(0)}%
+        {/* Threshold slider */}
+        <div className="mb-6 p-4 bg-[#1a1a1a]/5 border border-[#1a1a1a]/10">
+          <label className="block text-xs font-bold text-[#1a1a1a] uppercase tracking-wide mb-3">
+            Similarity Threshold: {(threshold * 100).toFixed(0)}%
           </label>
           <input
             type="range"
@@ -63,23 +65,24 @@ function IngredientMerge() {
           />
           <button
             onClick={loadSuggestions}
-            className="mt-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+            className="mt-4 px-4 py-2 bg-[#D94E3C] text-white font-bold uppercase text-sm hover:bg-[#c4453a] transition-colors border-2 border-[#1a1a1a]"
           >
             Refresh Suggestions
           </button>
         </div>
 
+        {/* Loading state */}
         {loading ? (
           <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600"></div>
-            <p className="mt-4 text-gray-600">Loading suggestions...</p>
+            <div className="inline-block w-12 h-12 border-4 border-[#1a1a1a]/20 border-t-[#D94E3C] rounded-full animate-spin"></div>
+            <p className="mt-4 text-[#1a1a1a]/60 font-medium uppercase tracking-wide">Loading suggestions...</p>
           </div>
         ) : suggestions.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-gray-500 text-lg">
-              ✨ No similar ingredients found!
+          <div className="text-center py-12 border-2 border-dashed border-[#1a1a1a]/20">
+            <p className="text-[#1a1a1a]/70 text-lg mb-2">
+              No similar ingredients found!
             </p>
-            <p className="text-gray-400 mt-2">
+            <p className="text-[#1a1a1a]/40">
               Your ingredients are well organized
             </p>
           </div>
@@ -88,25 +91,25 @@ function IngredientMerge() {
             {suggestions.map((suggestion) => (
               <div
                 key={suggestion.ingredient_id}
-                className="border border-gray-200 rounded-lg p-4"
+                className="border-2 border-[#1a1a1a] p-4"
               >
                 <div className="mb-3">
-                  <span className="font-semibold text-gray-900">
+                  <span className="font-bold text-[#1a1a1a] text-lg">
                     {suggestion.ingredient_name}
                   </span>
-                  <span className="text-gray-500 ml-2">is similar to:</span>
+                  <span className="text-[#1a1a1a]/50 ml-2">is similar to:</span>
                 </div>
 
                 <div className="space-y-2">
                   {suggestion.similar_to.map((similar) => (
                     <div
                       key={similar.id}
-                      className="flex items-center justify-between bg-gray-50 p-3 rounded"
+                      className="flex items-center justify-between bg-[#1a1a1a]/5 p-3"
                     >
                       <div className="flex items-center gap-3">
-                        <span className="text-gray-700">{similar.name}</span>
-                        <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded">
-                          {(similar.similarity_score * 100).toFixed(0)}% match
+                        <span className="text-[#1a1a1a]">{similar.name}</span>
+                        <span className="text-xs bg-[#E6A817] text-[#1a1a1a] px-2 py-1 font-bold uppercase">
+                          {(similar.similarity_score * 100).toFixed(0)}% Match
                         </span>
                       </div>
                       <button
@@ -116,7 +119,7 @@ function IngredientMerge() {
                           suggestion.ingredient_name,
                           similar.name
                         )}
-                        className="px-4 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700 transition-colors"
+                        className="px-4 py-2 bg-[#2851A3] text-white text-sm font-bold uppercase hover:bg-[#1f4280] transition-colors"
                       >
                         Merge →
                       </button>
@@ -129,14 +132,30 @@ function IngredientMerge() {
         )}
       </div>
 
-      <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-semibold text-blue-900 mb-2">ℹ️ About ingredient merging:</h3>
-        <ul className="text-sm text-blue-800 space-y-1">
-          <li>• Merging combines duplicate or similar ingredients</li>
-          <li>• All recipes will be updated automatically</li>
-          <li>• The source ingredient will be deleted</li>
-          <li>• This action cannot be undone</li>
-          <li>• Higher threshold = only very similar ingredients shown</li>
+      {/* Info box */}
+      <div className="mt-6 bg-[#E6A817]/20 border-2 border-[#E6A817]/40 p-5">
+        <h3 className="font-bold text-[#1a1a1a] mb-3 uppercase text-sm tracking-wide">About Ingredient Merging</h3>
+        <ul className="text-sm text-[#1a1a1a]/70 space-y-2">
+          <li className="flex items-start gap-2">
+            <span className="text-[#E6A817] mt-0.5">•</span>
+            Merging combines duplicate or similar ingredients
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-[#E6A817] mt-0.5">•</span>
+            All recipes will be updated automatically
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-[#E6A817] mt-0.5">•</span>
+            The source ingredient will be deleted
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-[#E6A817] mt-0.5">•</span>
+            This action cannot be undone
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-[#E6A817] mt-0.5">•</span>
+            Higher threshold = only very similar ingredients shown
+          </li>
         </ul>
       </div>
     </div>

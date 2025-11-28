@@ -4,9 +4,19 @@ from app.database import engine
 from app.models import Base
 from app.routers import cookbooks, recipes, ingredients, ocr
 import os
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Create database tables
-Base.metadata.create_all(bind=engine)
+try:
+    Base.metadata.create_all(bind=engine)
+    logger.info("Database tables created successfully")
+except Exception as e:
+    logger.error(f"Error creating database tables: {str(e)}", exc_info=True)
+    # Don't fail startup, but log the error
 
 app = FastAPI(
     title="Cookbook Index API",
@@ -15,7 +25,11 @@ app = FastAPI(
 )
 
 # Configure CORS - use environment variable or default to localhost for dev
-allowed_origins = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
+# Also include common production URLs
+default_origins = "http://localhost:5173,http://localhost:3000,https://cookbook-app-inky.vercel.app"
+cors_origins_env = os.getenv("CORS_ORIGINS", default_origins)
+allowed_origins = [origin.strip() for origin in cors_origins_env.split(",") if origin.strip()]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
@@ -47,12 +61,3 @@ def root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "https://cookbook-app-inky.vercel.app/"  # Add your Vercel URL
-    ],
-    # ...
-)

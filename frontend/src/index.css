@@ -2,16 +2,166 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* ============================================
+   NEO-BAUHAUS DESIGN SYSTEM
+   ============================================ */
+
+:root {
+  /* Primary Colors */
+  --color-canvas: #fffdf7;
+  --color-canvas-alt: #f5f3ee;
+  --color-ink: #1a1a1a;
+  
+  /* Accent Colors */
+  --color-mustard: #E6A817;
+  --color-cobalt: #2851A3;
+  --color-red: #D94E3C;
+  
+  /* Semantic */
+  --color-success: #2d7d46;
+  --color-error: #D94E3C;
+  
+  /* Typography */
+  --font-primary: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+/* Base Styles */
+body {
+  margin: 0;
+  font-family: var(--font-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--color-canvas-alt);
+  color: var(--color-ink);
+}
+
+/* Hide scrollbar for nav but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Custom range slider styling */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 8px;
+  background: rgba(26, 26, 26, 0.1);
+  border-radius: 0;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: var(--color-red);
+  cursor: pointer;
+  border: 2px solid var(--color-ink);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: var(--color-red);
+  cursor: pointer;
+  border: 2px solid var(--color-ink);
+  border-radius: 0;
+}
+
+/* Custom checkbox styling */
+input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-ink);
+  background: white;
+  cursor: pointer;
+  position: relative;
+}
+
+input[type="checkbox"]:checked {
+  background: var(--color-cobalt);
+}
+
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 6px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Focus states */
+input:focus, select:focus, textarea:focus, button:focus {
+  outline: none;
+}
+
+/* Selection color */
+::selection {
+  background: var(--color-mustard);
+  color: var(--color-ink);
+}
+
+/* Animations */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Utility classes for the design system */
+@layer components {
+  .bauhaus-card {
+    @apply bg-[#fffdf7] border-2 border-[#1a1a1a];
+  }
+  
+  .bauhaus-card-hover {
+    @apply hover:shadow-[4px_4px_0px_0px_#1a1a1a] transition-shadow duration-200;
+  }
+  
+  .bauhaus-input {
+    @apply px-4 py-3 bg-white border-2 border-[#1a1a1a] text-[#1a1a1a] focus:border-[#2851A3] transition-colors;
+  }
+  
+  .bauhaus-btn-primary {
+    @apply px-6 py-3 bg-[#D94E3C] text-white font-bold uppercase tracking-wider hover:bg-[#c4453a] transition-colors border-2 border-[#1a1a1a];
+  }
+  
+  .bauhaus-btn-secondary {
+    @apply px-6 py-3 bg-[#E6A817] text-[#1a1a1a] font-bold uppercase tracking-wide hover:bg-[#d49a15] transition-colors border-2 border-[#1a1a1a];
+  }
+  
+  .bauhaus-btn-tertiary {
+    @apply px-6 py-3 bg-[#2851A3] text-white font-bold uppercase tracking-wide hover:bg-[#1f4280] transition-colors border-2 border-[#1a1a1a];
+  }
+  
+  .bauhaus-label {
+    @apply block text-xs font-bold text-[#1a1a1a] uppercase tracking-wide mb-2;
+  }
+  
+  .bauhaus-section-header {
+    @apply flex items-center gap-3 mb-6;
+  }
+  
+  .bauhaus-accent-bar {
+    @apply w-3 h-8;
+  }
+  
+  .bauhaus-section-title {
+    @apply text-lg font-bold text-[#1a1a1a] uppercase tracking-wide;
+  }
 }

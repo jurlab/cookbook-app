@@ -9,6 +9,10 @@ load_dotenv()
 # defaults to sqlite for easy local testing, can switch to postgres
 SQLALCHEMY_DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./cookbook.db")
 
+# Render and some other providers use postgres:// but SQLAlchemy needs postgresql://
+if SQLALCHEMY_DATABASE_URL.startswith("postgres://"):
+    SQLALCHEMY_DATABASE_URL = SQLALCHEMY_DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
 # Configure connection pooling for better performance
 connect_args = {"check_same_thread": False} if "sqlite" in SQLALCHEMY_DATABASE_URL else {}
 pool_args = {} if "sqlite" in SQLALCHEMY_DATABASE_URL else {
